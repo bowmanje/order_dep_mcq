@@ -4,7 +4,7 @@ This program asks an OpenAI model multiple-choice questions from parquet files a
 
 Results are written to a CSV named after the model and the option order, for example `gpt-4o-mini_fixed.csv` or `gpt-4o-mini_randomized.csv`.
 
-## Install Ruby
+## Install Ruby, Minimum Required Version (3.3.0)
 
 On Ubuntu or Debian, including WSL:
 

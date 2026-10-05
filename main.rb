@@ -35,11 +35,15 @@ def chosen_label(content)
 end
 
 def ask(client, statement, ordered_options)
-  response = client.chat.completions.create(
+  params = {
     model: MODEL,
     temperature: 0,
     messages: [{ role: "user", content: prompt_for(statement, ordered_options) }]
-  )
+  }
+  if MODEL.match(/gpt-(\d{1})/)[1].to_i > 4
+    params.delete(:temperature)
+  end
+  response = client.chat.completions.create(params)
 
   chosen_label(response.choices.first.message.content)
 end
@@ -57,25 +61,29 @@ Dataset.import_dataset(DATASET_PATH) unless File.exist?("#{FileUtils.pwd}/datase
 
 client = OpenAI::Client.new(api_key: ENV.fetch("OPENAI_API_KEY"))
 trials = []
-Dataset.fetch_questions_with_answers(LIMIT).each do |question|
-  orders_by_answer_position(question[:options], question[:answer_text], RANDOMIZE_OPTIONS).each do |ordered|
-    correct_index = ordered.index(question[:answer_text])
-    label = ask(client, question[:statement], ordered)
-    chosen_index = LABELS.index(label)
-    correct = !chosen_index.nil? && ordered[chosen_index] == question[:answer_text]
-    correct_position = LABELS[correct_index]
+Dataset.fetch_questions_with_answers(LIMIT).each_slice(10).map do |questions|
+  Thread.new do
+    questions.map do |question|
+      orders_by_answer_position(question[:options], question[:answer_text], RANDOMIZE_OPTIONS).each do |ordered|
+        correct_index = ordered.index(question[:answer_text])
+        label = ask(client, question[:statement], ordered)
+        chosen_index = LABELS.index(label)
+        correct = !chosen_index.nil? && ordered[chosen_index] == question[:answer_text]
+        correct_position = LABELS[correct_index]
 
-    trials << {
-      statement: question[:statement],
-      options: ordered,
-      answer_text: question[:answer_text],
-      correct_position: correct_position,
-      chosen: label,
-      correct: correct
-    }
+        trials << {
+          statement: question[:statement],
+          options: ordered,
+          answer_text: question[:answer_text],
+          correct_position: correct_position,
+          chosen: label,
+          correct: correct
+        }
 
+      end
+    end
   end
-end
+end.each(&:join)
 
 CSV.open("#{MODEL}_#{RANDOMIZE_OPTIONS ? "randomized" : "fixed"}.csv", "w") do |csv|
   csv << ["statement", *LABELS, "correct_position", "chosen", "correct"]

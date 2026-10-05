@@ -85,6 +85,16 @@ Dataset.fetch_questions_with_answers(LIMIT).each_slice(10).map do |questions|
   end
 end.each(&:join)
 
+results = {}
+results[:accuracy_by_position] = LABELS.each_with_object({}) do |position, acc|
+  subset = trials.select { |trial| trial[:correct_position] == position }
+  acc[position] = "#{subset.count { |trial| trial[:correct] }}/#{subset.size}"
+end
+results[:accuracy_by_letter] = LABELS.each_with_object({}) do |label, acc|
+  acc[label] = "#{trials.count { |trial| trial[:chosen] == label }}/#{trials.size}"
+end
+
+File.write("#{MODEL}_#{RANDOMIZE_OPTIONS ? "randomized" : "fixed"}.json", results.to_json)
 CSV.open("#{MODEL}_#{RANDOMIZE_OPTIONS ? "randomized" : "fixed"}.csv", "w") do |csv|
   csv << ["statement", *LABELS, "correct_position", "chosen", "correct"]
   trials.each do |trial|

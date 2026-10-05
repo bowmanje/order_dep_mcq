@@ -37,7 +37,7 @@ end
 def ask(client, statement, ordered_options)
   response = client.chat.completions.create(
     model: MODEL,
-    temperature: 0.5,
+    temperature: 0,
     messages: [{ role: "user", content: prompt_for(statement, ordered_options) }]
   )
 

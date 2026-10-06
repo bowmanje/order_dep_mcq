@@ -90,7 +90,7 @@ results[:accuracy_by_position] = LABELS.each_with_object({}) do |position, acc|
   subset = trials.select { |trial| trial[:correct_position] == position }
   acc[position] = "#{subset.count { |trial| trial[:correct] }}/#{subset.size}"
 end
-results[:accuracy_by_letter] = LABELS.each_with_object({}) do |label, acc|
+results[:letter_selection_counts] = LABELS.each_with_object({}) do |label, acc|
   acc[label] = "#{trials.count { |trial| trial[:chosen] == label }}/#{trials.size}"
 end
 

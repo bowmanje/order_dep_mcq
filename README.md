@@ -104,11 +104,11 @@ Both values are strings of `hits/total`.
 
 `accuracy_by_position` is how often the model was right when the correct option sat in that letter. A lower number for one letter means the model missed more often when the answer was placed there.
 
-`accuracy_by_letter` is how often the model picked that letter, out of every trial. A higher number means the model favored that position.
+`letter_selection_counts` is how often the model picked that letter, out of every trial. A higher number means the model favored that position.
 
 ```json
 {
   "accuracy_by_position": { "A": "74/100", "B": "72/100", "C": "71/100", "D": "63/100" },
-  "accuracy_by_letter": { "A": "110/400", "B": "108/400", "C": "101/400", "D": "81/400" }
+  "letter_selection_counts": { "A": "110/400", "B": "108/400", "C": "101/400", "D": "81/400" }
 }
 ```
